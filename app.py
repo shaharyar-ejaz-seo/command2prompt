@@ -1,187 +1,455 @@
 import streamlit as st
 import requests
-from datetime import datetime
 
 # ----------------------------
-# CONFIG
+# PAGE CONFIG
 # ----------------------------
 st.set_page_config(
     page_title="Shaharyar Ejaz Prompt Studio",
     page_icon="✨",
-    layout="wide"
+    layout="wide",
 )
 
 # ----------------------------
 # BRANDING
 # ----------------------------
 BRAND_NAME = "Shaharyar Ejaz Prompt Studio"
-BRAND_TAGLINE = "Professional AI Prompt Systems for Brands, Agencies & Creators"
+BRAND_TAGLINE = "Premium AI Prompt Systems for SEO, AI Search, Content, Stories, and Conversions"
 BRAND_OWNER = "Shaharyar Ejaz"
-LINKEDIN = "https://www.linkedin.com/in/shaharyar-ejaz-seo/"
+LINKEDIN_URL = "https://www.linkedin.com/in/shaharyar-ejaz-seo/"
 
 # ----------------------------
-# CSS (NO f-string = NO ERROR)
+# CUSTOM CSS
 # ----------------------------
-st.markdown("""
-<style>
-.stApp {
-    background: linear-gradient(135deg, #0B1220, #111827, #172033);
-    color: white;
-}
+st.markdown(
+    """
+    <style>
+        .stApp {
+            background: linear-gradient(135deg, #0B1220 0%, #111827 45%, #172033 100%);
+            color: white;
+        }
 
-.block-container {
-    max-width: 1100px;
-}
+        .block-container {
+            max-width: 1180px;
+            padding-top: 2rem;
+            padding-bottom: 2rem;
+        }
 
-.hero {
-    padding: 30px;
-    border-radius: 20px;
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.08);
-    margin-bottom: 20px;
-}
+        .hero-box {
+            padding: 30px;
+            border-radius: 22px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.20);
+            margin-bottom: 18px;
+        }
 
-.title {
-    font-size: 44px;
-    font-weight: 800;
-}
+        .hero-badge {
+            display: inline-block;
+            padding: 8px 14px;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.10);
+            color: #E2E8F0;
+            font-size: 13px;
+            margin-bottom: 14px;
+        }
 
-.subtitle {
-    color: #CBD5E1;
-}
+        .hero-title {
+            font-size: 46px;
+            font-weight: 800;
+            line-height: 1.05;
+            margin-bottom: 8px;
+            letter-spacing: -0.02em;
+        }
 
-.card {
-    background: rgba(255,255,255,0.05);
-    padding: 20px;
-    border-radius: 18px;
-    border: 1px solid rgba(255,255,255,0.08);
-}
+        .hero-subtitle {
+            color: #CBD5E1;
+            font-size: 17px;
+            margin-bottom: 8px;
+        }
 
-.result {
-    background: rgba(255,255,255,0.06);
-    padding: 20px;
-    border-radius: 18px;
-    border: 1px solid rgba(255,255,255,0.1);
-    margin-top: 20px;
-}
+        .hero-meta {
+            color: #94A3B8;
+            font-size: 14px;
+        }
 
-button {
-    border-radius: 12px !important;
-}
+        .mini-card {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            padding: 18px;
+            border-radius: 18px;
+            height: 100%;
+            margin-bottom: 12px;
+        }
 
-.footer {
-    text-align:center;
-    color:#94A3B8;
-    margin-top:20px;
-}
-</style>
-""", unsafe_allow_html=True)
+        .mini-card h4 {
+            margin: 0 0 8px 0;
+            font-size: 16px;
+        }
+
+        .mini-card p {
+            margin: 0;
+            color: #CBD5E1;
+            font-size: 14px;
+        }
+
+        .main-card {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            padding: 22px;
+            border-radius: 20px;
+            margin-top: 12px;
+        }
+
+        .result-card {
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.10);
+            padding: 22px;
+            border-radius: 20px;
+            margin-top: 20px;
+        }
+
+        div[data-testid="stTextArea"] textarea {
+            border-radius: 16px !important;
+            min-height: 150px;
+        }
+
+        div[data-testid="stSelectbox"] > div {
+            border-radius: 14px !important;
+        }
+
+        div[data-testid="stButton"] button {
+            width: 100%;
+            border-radius: 14px !important;
+            font-weight: 700 !important;
+        }
+
+        div[data-testid="stDownloadButton"] button {
+            width: 100%;
+            border-radius: 14px !important;
+            font-weight: 700 !important;
+        }
+
+        .footer {
+            text-align: center;
+            color: #94A3B8;
+            margin-top: 24px;
+            font-size: 14px;
+        }
+
+        .status-ok {
+            color: #86efac;
+            font-size: 13px;
+            margin-top: 8px;
+        }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
 
 # ----------------------------
-# PROMPT TYPES
+# PROMPT CATEGORIES
 # ----------------------------
-PROMPTS = {
-    "Custom Prompt": "General professional prompt",
-    "SEO Blog Prompt": "SEO optimized blog writing",
-    "Story Prompt": "Story with hook, character, conflict, climax",
-    "YouTube Script": "Engaging YouTube script",
-    "Ad Copy": "High converting ads",
-    "Product Description": "Conversion focused product copy",
-    "Social Media": "Engaging social captions",
-    "Email": "Professional email writing",
-}
+PROMPT_CATEGORIES = [
+    "Custom Prompt",
+    "SEO Blog Prompt",
+    "Meta Title / Description Prompt",
+    "Website Copy Prompt",
+    "Story Prompt",
+    "Children Story Prompt",
+    "YouTube Script Prompt",
+    "Thumbnail Prompt",
+    "Ad Copy Prompt",
+    "Product Description Prompt",
+    "Social Media Prompt",
+    "Email Prompt",
+    "Brand Voice Prompt",
+]
 
 # ----------------------------
-# AI FUNCTION (SAFE)
+# HELPER: BUILD SYSTEM PROMPT
 # ----------------------------
-def generate_prompt(command, category, tone, length):
+def build_system_prompt(category: str, tone: str, length: str) -> str:
+    return f"""
+You are the core AI engine behind Shaharyar Ejaz Prompt Studio.
+
+Brand Owner: Shaharyar Ejaz
+Brand Positioning: Premium AI Prompt Systems for Brands, Agencies, Creators, and Storytellers
+LinkedIn: https://www.linkedin.com/in/shaharyar-ejaz-seo/
+
+Your mission is to convert short user commands into premium, professional, high-performance prompts that are:
+- AI-friendly
+- SEO-aware
+- EEAT-focused
+- conversion-oriented
+- human-sounding
+- cleanly structured
+- ready to copy and use instantly
+
+The generated prompt must feel like it was written by a top-tier agency prompt strategist, not by a generic AI tool.
+
+PROMPT CATEGORY:
+{category}
+
+TONE:
+{tone}
+
+OUTPUT LENGTH:
+{length}
+
+CORE REQUIREMENTS:
+- Upgrade weak or short user input into a premium prompt
+- Preserve the original user intent
+- Fill reasonable gaps intelligently
+- Never sound robotic
+- Never produce generic fluff
+- Make the output copy-paste ready
+- Use polished, premium, agency-level language
+- Keep the prompt strategic and practical
+- Prefer clarity over hype
+- When relevant, optimize for both Google SEO and AI search engines
+- When relevant, make it conversion-friendly
+
+OUTPUT STRUCTURE SHOULD INCLUDE WHEN RELEVANT:
+1. ROLE
+2. MISSION
+3. CONTEXT
+4. OBJECTIVE
+5. TARGET AUDIENCE
+6. TONE / STYLE
+7. STRUCTURE
+8. SEO LAYER
+9. EEAT LAYER
+10. AI SEARCH OPTIMIZATION
+11. CONVERSION LAYER
+12. CONSTRAINTS
+13. FINAL OUTPUT FORMAT
+
+CATEGORY-SPECIFIC HANDLING:
+- SEO Blog Prompt: include primary keyword, secondary keywords, semantic terms, search intent, internal link ideas, featured snippet angle, EEAT signals, CTA
+- Meta Title / Description Prompt: include CTR optimization, pixel awareness, intent alignment, keyword placement, trust angle
+- Website Copy Prompt: include positioning, trust, pain points, benefit hierarchy, CTA flow, premium tone
+- Story Prompt: include genre/theme, main character, emotional hook, conflict, pacing, climax, ending style, audience, tone
+- Children Story Prompt: include simple language, warm emotional tone, lesson/moral, engaging hook, memorable ending
+- YouTube Script Prompt: include opening hook, retention strategy, pacing, audience engagement, CTA
+- Thumbnail Prompt: include visual scene, emotion, framing, contrast, click-driving angle
+- Ad Copy Prompt: include pain points, value proposition, hook, objection handling, CTA, testing angles
+- Product Description Prompt: include features, benefits, emotional value, buyer angle, persuasive but clean copy
+- Social Media Prompt: include hook, body, engagement line, CTA, platform-fit style
+- Email Prompt: include purpose, tone, structure, CTA, clarity, response objective
+- Brand Voice Prompt: include brand personality, tone rules, language style, do/don't list, sample phrasing
+- Custom Prompt: infer the best professional structure based on user command
+
+QUALITY STANDARD:
+Every final prompt must feel:
+- premium
+- strategic
+- useful
+- brandable
+- expert-led
+- client-ready
+
+At the end of the generated prompt, add this line when appropriate:
+Prepared by Shaharyar Ejaz Prompt Studio | LinkedIn: https://www.linkedin.com/in/shaharyar-ejaz-seo/
+"""
+
+# ----------------------------
+# HELPER: CALL OPENROUTER
+# ----------------------------
+def generate_prompt(command: str, category: str, tone: str, length: str):
     api_key = st.secrets.get("OPENROUTER_API_KEY")
 
     if not api_key:
-        return None, "API key missing. Add it in Secrets."
+        return None, "OPENROUTER_API_KEY missing hai. Settings > Secrets mein real key add karo."
 
-    system = f"""
-You are a professional prompt engineer.
-
-Category: {category}
-Tone: {tone}
-Length: {length}
-
-Convert user command into a premium structured AI prompt.
-Make it clean, professional, and ready-to-use.
-"""
+    system_prompt = build_system_prompt(category, tone, length)
 
     try:
-        res = requests.post(
+        response = requests.post(
             "https://openrouter.ai/api/v1/chat/completions",
             headers={
                 "Authorization": f"Bearer {api_key}",
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
             },
             json={
                 "model": "openai/gpt-4o-mini",
                 "messages": [
-                    {"role": "system", "content": system},
-                    {"role": "user", "content": command}
-                ]
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": command},
+                ],
+                "temperature": 0.7,
             },
-            timeout=60
+            timeout=60,
         )
 
-        data = res.json()
+        data = response.json()
 
-        if "choices" in data:
+        if response.status_code != 200:
+            return None, f"API Error: {data}"
+
+        if "choices" in data and len(data["choices"]) > 0:
             return data["choices"][0]["message"]["content"], None
-        else:
-            return None, str(data)
 
+        return None, f"Unexpected API response: {data}"
+
+    except requests.exceptions.Timeout:
+        return None, "Request timeout ho gaya. Thori der baad dubara try karo."
+    except requests.exceptions.RequestException as e:
+        return None, f"Network/API request error: {e}"
     except Exception as e:
-        return None, str(e)
+        return None, f"Unexpected error: {e}"
 
 # ----------------------------
-# UI
+# SESSION STATE
 # ----------------------------
-st.markdown(f"""
-<div class="hero">
-<div class="title">{BRAND_NAME}</div>
-<div class="subtitle">{BRAND_TAGLINE}</div>
-<div class="subtitle">{BRAND_OWNER}</div>
-</div>
-""", unsafe_allow_html=True)
+if "generated_prompt" not in st.session_state:
+    st.session_state.generated_prompt = ""
 
-command = st.text_area("Enter your command")
+# ----------------------------
+# SIDEBAR
+# ----------------------------
+with st.sidebar:
+    st.markdown("## Prompt Studio")
+    st.caption("Professional AI prompt engine with SEO, EEAT, AI search, and story support.")
 
-col1, col2, col3 = st.columns(3)
-
-with col1:
-    category = st.selectbox("Category", list(PROMPTS.keys()))
-with col2:
-    tone = st.selectbox("Tone", ["Professional", "Creative", "Emotional"])
-with col3:
-    length = st.selectbox("Length", ["Short", "Medium", "Detailed"])
-
-if st.button("Generate Prompt"):
-    if not command:
-        st.warning("Enter command first")
+    if st.secrets.get("OPENROUTER_API_KEY"):
+        st.markdown('<div class="status-ok">● API key connected</div>', unsafe_allow_html=True)
     else:
-        with st.spinner("Generating..."):
-            result, error = generate_prompt(command, category, tone, length)
+        st.warning("API key connect nahi hui. Secrets mein OPENROUTER_API_KEY add karo.")
 
+    st.markdown("---")
+    st.markdown("### Brand")
+    st.write("**Shaharyar Ejaz**")
+    st.markdown(
+        f"[LinkedIn Profile]({LINKEDIN_URL})"
+    )
+
+# ----------------------------
+# HERO
+# ----------------------------
+st.markdown(
+    f"""
+    <div class="hero-box">
+        <div class="hero-badge">Premium AI Prompt Studio</div>
+        <div class="hero-title">{BRAND_NAME}</div>
+        <div class="hero-subtitle">{BRAND_TAGLINE}</div>
+        <div class="hero-meta">Built by {BRAND_OWNER} • <a href="{LINKEDIN_URL}" target="_blank">LinkedIn</a></div>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
+# ----------------------------
+# TOP FEATURE CARDS
+# ----------------------------
+c1, c2, c3 = st.columns(3)
+
+with c1:
+    st.markdown(
+        """
+        <div class="mini-card">
+            <h4>AI-Friendly</h4>
+            <p>Prompt outputs are structured for ChatGPT, Gemini, Claude, and answer engines.</p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+with c2:
+    st.markdown(
+        """
+        <div class="mini-card">
+            <h4>SEO + EEAT</h4>
+            <p>Built to generate prompts with authority, trust, semantic depth, and search intent.</p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+with c3:
+    st.markdown(
+        """
+        <div class="mini-card">
+            <h4>Stories + Marketing</h4>
+            <p>Create prompts for stories, thumbnails, blogs, ads, product copy, and more.</p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+# ----------------------------
+# MAIN APP
+# ----------------------------
+st.markdown('<div class="main-card">', unsafe_allow_html=True)
+
+left_col, right_col = st.columns([1.35, 0.65])
+
+with left_col:
+    command = st.text_area(
+        "Enter your short command",
+        placeholder="Example: Create a premium SEO blog prompt for a Florida permit services website targeting property owners and investors.",
+    )
+
+with right_col:
+    category = st.selectbox("Prompt Category", PROMPT_CATEGORIES)
+    tone = st.selectbox(
+        "Tone",
+        ["Professional", "Premium", "Authoritative", "Creative", "Emotional", "Humanized", "Cinematic"],
+    )
+    length = st.selectbox("Output Length", ["Short", "Medium", "Detailed"])
+
+b1, b2 = st.columns(2)
+with b1:
+    generate_clicked = st.button("Generate Prompt")
+with b2:
+    clear_clicked = st.button("Clear Output")
+
+if clear_clicked:
+    st.session_state.generated_prompt = ""
+
+if generate_clicked:
+    if not command.strip():
+        st.warning("Please enter a short command first.")
+    else:
+        with st.spinner("Generating your premium prompt..."):
+            result, error = generate_prompt(command, category, tone, length)
             if error:
                 st.error(error)
             else:
-                st.markdown('<div class="result">', unsafe_allow_html=True)
-                st.code(result)
-                st.markdown('</div>', unsafe_allow_html=True)
+                st.session_state.generated_prompt = result
 
-                st.download_button(
-                    "Download",
-                    result,
-                    file_name="prompt.txt"
-                )
+st.markdown("</div>", unsafe_allow_html=True)
 
-st.markdown(f"""
-<div class="footer">
-Built by Shaharyar Ejaz • <a href="{LINKEDIN}" target="_blank">LinkedIn</a>
-</div>
-""", unsafe_allow_html=True)
+# ----------------------------
+# RESULT
+# ----------------------------
+if st.session_state.generated_prompt:
+    st.markdown('<div class="result-card">', unsafe_allow_html=True)
+    st.subheader("Generated Prompt")
+    st.code(st.session_state.generated_prompt, language="markdown")
+
+    d1, d2 = st.columns(2)
+    with d1:
+        st.download_button(
+            "Download Prompt (.txt)",
+            data=st.session_state.generated_prompt,
+            file_name="generated_prompt.txt",
+            mime="text/plain",
+        )
+    with d2:
+        st.text_area("Copy Prompt", value=st.session_state.generated_prompt, height=180)
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
+# ----------------------------
+# FOOTER
+# ----------------------------
+st.markdown(
+    f"""
+    <div class="footer">
+        Built by {BRAND_OWNER} • <a href="{LINKEDIN_URL}" target="_blank">LinkedIn</a>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
