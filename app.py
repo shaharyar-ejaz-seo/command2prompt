@@ -11,7 +11,7 @@ BRAND_NAME = "Shaharyar Ejaz Prompt Studio"
 BRAND_TAGLINE = "Premium AI Prompt Systems for SEO, AI Search, Content, Stories, and Conversions"
 BRAND_OWNER = "Shaharyar Ejaz"
 LINKEDIN_URL = "https://www.linkedin.com/in/shaharyar-ejaz-seo/"
-APP_URL = https://shaharyarpropmtseo.streamlit.app/
+APP_URL = "https://shaharyarpropmtseo.streamlit.app"
 
 st.markdown(
     """
