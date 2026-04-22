@@ -1,26 +1,18 @@
 import streamlit as st
 import requests
 
-# ----------------------------
-# PAGE CONFIG
-# ----------------------------
 st.set_page_config(
     page_title="Shaharyar Ejaz Prompt Studio",
     page_icon="✨",
     layout="wide",
 )
 
-# ----------------------------
-# BRANDING
-# ----------------------------
 BRAND_NAME = "Shaharyar Ejaz Prompt Studio"
 BRAND_TAGLINE = "Premium AI Prompt Systems for SEO, AI Search, Content, Stories, and Conversions"
 BRAND_OWNER = "Shaharyar Ejaz"
 LINKEDIN_URL = "https://www.linkedin.com/in/shaharyar-ejaz-seo/"
+APP_URL = "https://command2prompt.streamlit.app"
 
-# ----------------------------
-# CUSTOM CSS
-# ----------------------------
 st.markdown(
     """
     <style>
@@ -148,9 +140,6 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# ----------------------------
-# PROMPT CATEGORIES
-# ----------------------------
 PROMPT_CATEGORIES = [
     "Custom Prompt",
     "SEO Blog Prompt",
@@ -167,16 +156,13 @@ PROMPT_CATEGORIES = [
     "Brand Voice Prompt",
 ]
 
-# ----------------------------
-# HELPER: BUILD SYSTEM PROMPT
-# ----------------------------
 def build_system_prompt(category: str, tone: str, length: str) -> str:
     return f"""
 You are the core AI engine behind Shaharyar Ejaz Prompt Studio.
 
 Brand Owner: Shaharyar Ejaz
 Brand Positioning: Premium AI Prompt Systems for Brands, Agencies, Creators, and Storytellers
-LinkedIn: https://www.linkedin.com/in/shaharyar-ejaz-seo/
+LinkedIn: {LINKEDIN_URL}
 
 Your mission is to convert short user commands into premium, professional, high-performance prompts that are:
 - AI-friendly
@@ -251,12 +237,9 @@ Every final prompt must feel:
 - client-ready
 
 At the end of the generated prompt, add this line when appropriate:
-Prepared by Shaharyar Ejaz Prompt Studio | LinkedIn: https://www.linkedin.com/in/shaharyar-ejaz-seo/
+Prepared by Shaharyar Ejaz Prompt Studio | LinkedIn: {LINKEDIN_URL}
 """
 
-# ----------------------------
-# HELPER: CALL OPENROUTER
-# ----------------------------
 def generate_prompt(command: str, category: str, tone: str, length: str):
     api_key = st.secrets.get("OPENROUTER_API_KEY")
 
@@ -265,21 +248,27 @@ def generate_prompt(command: str, category: str, tone: str, length: str):
 
     system_prompt = build_system_prompt(category, tone, length)
 
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json",
+        "HTTP-Referer": APP_URL,
+        "X-Title": BRAND_NAME,
+    }
+
+    payload = {
+        "model": "openai/gpt-4o-mini",
+        "messages": [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": command},
+        ],
+        "temperature": 0.7,
+    }
+
     try:
         response = requests.post(
             "https://openrouter.ai/api/v1/chat/completions",
-            headers={
-                "Authorization": f"Bearer {api_key}",
-                "Content-Type": "application/json",
-            },
-            json={
-                "model": "openai/gpt-4o-mini",
-                "messages": [
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": command},
-                ],
-                "temperature": 0.7,
-            },
+            headers=headers,
+            json=payload,
             timeout=60,
         )
 
@@ -289,7 +278,10 @@ def generate_prompt(command: str, category: str, tone: str, length: str):
             return None, f"API Error: {data}"
 
         if "choices" in data and len(data["choices"]) > 0:
-            return data["choices"][0]["message"]["content"], None
+            message = data["choices"][0].get("message", {})
+            content = message.get("content")
+            if content:
+                return content, None
 
         return None, f"Unexpected API response: {data}"
 
@@ -300,15 +292,9 @@ def generate_prompt(command: str, category: str, tone: str, length: str):
     except Exception as e:
         return None, f"Unexpected error: {e}"
 
-# ----------------------------
-# SESSION STATE
-# ----------------------------
 if "generated_prompt" not in st.session_state:
     st.session_state.generated_prompt = ""
 
-# ----------------------------
-# SIDEBAR
-# ----------------------------
 with st.sidebar:
     st.markdown("## Prompt Studio")
     st.caption("Professional AI prompt engine with SEO, EEAT, AI search, and story support.")
@@ -321,13 +307,8 @@ with st.sidebar:
     st.markdown("---")
     st.markdown("### Brand")
     st.write("**Shaharyar Ejaz**")
-    st.markdown(
-        f"[LinkedIn Profile]({LINKEDIN_URL})"
-    )
+    st.markdown(f"[LinkedIn Profile]({LINKEDIN_URL})")
 
-# ----------------------------
-# HERO
-# ----------------------------
 st.markdown(
     f"""
     <div class="hero-box">
@@ -340,9 +321,6 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# ----------------------------
-# TOP FEATURE CARDS
-# ----------------------------
 c1, c2, c3 = st.columns(3)
 
 with c1:
@@ -378,9 +356,6 @@ with c3:
         unsafe_allow_html=True,
     )
 
-# ----------------------------
-# MAIN APP
-# ----------------------------
 st.markdown('<div class="main-card">', unsafe_allow_html=True)
 
 left_col, right_col = st.columns([1.35, 0.65])
@@ -421,9 +396,6 @@ if generate_clicked:
 
 st.markdown("</div>", unsafe_allow_html=True)
 
-# ----------------------------
-# RESULT
-# ----------------------------
 if st.session_state.generated_prompt:
     st.markdown('<div class="result-card">', unsafe_allow_html=True)
     st.subheader("Generated Prompt")
@@ -442,9 +414,6 @@ if st.session_state.generated_prompt:
 
     st.markdown("</div>", unsafe_allow_html=True)
 
-# ----------------------------
-# FOOTER
-# ----------------------------
 st.markdown(
     f"""
     <div class="footer">
